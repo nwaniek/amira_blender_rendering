@@ -37,10 +37,10 @@ The workflow of using ABR is held as simple as possible.
 4. Finally, you commence dataset generation by running the provided ``abrgen``
    command.
 
-As outlined above, each scene requires what we call a *backend implementation*. 
-This implementation takes care of loading a blender file, setting up everything that 
+As outlined above, each scene requires what we call a *backend implementation*.
+This implementation takes care of loading a blender file, setting up everything that
 is required such as camera information, objects, randomization, etc.
-It also contains a `main loop` which does the rendering for the number of desired images. 
+It also contains a `main loop` which does the rendering for the number of desired images.
 An exemplary backend implementation can be found in ABR source tree at
 ``src/amira_blender_rendering/scenes/workstationscenarios.py``.
 This backend implementation reads all optional configuration parameters either
@@ -78,6 +78,7 @@ If you use ABR please make sure to cite our work.
    using.rst
    formats.rst
    datasets.rst
+   abr_gui.rst
    fqa.rst
    troubleshooting.rst
    tests.rst

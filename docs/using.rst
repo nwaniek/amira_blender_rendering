@@ -2,10 +2,15 @@ Using ABR
 =========
 
 ABR was developed to be used in headless fashion to render datasets from
-pre-defined blender files. For this, we provide the single (command line) 
+pre-defined blender files. For this, we provide the single (command line)
 entry point ``abrgen``, to which a user has to pass a configuration file (see
-Configuration :doc:`configs/overview`) and possibly other command line arguments, 
+Configuration :doc:`configs/overview`) and possibly other command line arguments,
 and which will then invoke blender in the correct manner.
+
+We also provide a GUI Add-On for blender to ease development and debugging of
+scenes and backend scripts. The documentation for this Add-On can be found
+at :doc:`abr_gui.rst`.
+
 
 Using ABR with installation
 ---------------------------
@@ -67,7 +72,7 @@ where to find the ABR package using the ``--abr-path`` command line argument:
 
 In the second case, or if you would like to circumvent using ``abrgen``, you can
 also directly invoke blender. For this to work, you need to locate the file
-``render_dataset.py`` inside the ABR source tree 
+``render_dataset.py`` inside the ABR source tree
 (it should be located in ``$ABR/src/amira_blender_rendering/cli`` where ``$ABR`` should
 contain the path to ABR root directory), and call blender with the following options:
 
@@ -118,7 +123,7 @@ follow good practices and isolate your work into separate virtual environments.
    any ALSA errors that might get printed, as we don't consider sound in our
    datasets, and GPU clusters often don't ship with sound cards.
 
-4. Activate your new conda environment and install ABR's dependencies via 
+4. Activate your new conda environment and install ABR's dependencies via
 conda or pip. The example below uses pip.
 
 .. code-block:: bash
@@ -156,8 +161,8 @@ because abrgen and, in turn, blender, will already point to it.
 Environment variables
 ---------------------
 
-As mentioned in point 6. above, note that some scenes and/or configurations might 
-require you to setup global variables. 
+As mentioned in point 6. above, note that some scenes and/or configurations might
+require you to setup global variables.
 Here's a non-exhaustive) list of the variables that we usually use (Name | Description):
 
 $AMIRA_DATASETS | Path to datasets, such as the one produced here, or OpenImagesV4
@@ -171,8 +176,8 @@ Rendering modes
 ---------------
 
 Currently, for some of the ready available scenes, ABR offers two different
-rendering modes ``(DEFAULT, MULTIVIEW)`` which can be selected at deployment 
-time by running ``abrgen`` with the flag ``--render-mode`` followed by the 
+rendering modes ``(DEFAULT, MULTIVIEW)`` which can be selected at deployment
+time by running ``abrgen`` with the flag ``--render-mode`` followed by the
 name of the mode.
 
 ``DEFAULT`` refers to the default rendering mode. That is, if no flag is explicitly

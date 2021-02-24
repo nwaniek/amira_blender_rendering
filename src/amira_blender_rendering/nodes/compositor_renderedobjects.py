@@ -113,7 +113,7 @@ class CompositorNodesOutputRenderedObjects():
 
         # add file output node and setup format (16bit RGB without alpha channel)
         n_output_file = nodes.new('CompositorNodeOutputFile')
-        n_output_file.name = 'RenderObjectsFileOutputNode'
+        n_output_file.name = 'abr_CN_RenderObjectsFileOutputNode'
         # n_output_file.base_path = self.path_base
 
         # the following format will be used for all sockets, except when setting a
@@ -141,6 +141,8 @@ class CompositorNodesOutputRenderedObjects():
 
         # backdrop setup (mask without any object)
         n_id_mask = nodes.new('CompositorNodeIDMask')
+        n_id_mask.name = "abr_CN_IDMask_Backdrop"
+        n_id_mask.label = "ABR ID Mask Backdrop"
         n_id_mask.index = 0
         n_id_mask.use_antialiasing = True
         tree.links.new(n_render_layers.outputs['IndexOB'], n_id_mask.inputs['ID value'])
@@ -159,6 +161,9 @@ class CompositorNodesOutputRenderedObjects():
 
             # mask
             n_id_mask = nodes.new('CompositorNodeIDMask')
+            n_id_mask.name = f'abr_CN_IDMask_obj{i}'
+            # TODO: change label from index to object name
+            n_id_mask.label = f'ABR ID Mask Object {i}'
             n_id_mask.index = obj['bpy'].pass_index
             n_id_mask.use_antialiasing = True
             tree.links.new(n_render_layers.outputs['IndexOB'], n_id_mask.inputs['ID value'])

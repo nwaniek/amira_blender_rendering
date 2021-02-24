@@ -8,7 +8,9 @@ Frequently Questioned Answers
    the focus was primarily on writing the scripts that are required to automate
    the rendering process given a certain scenario.
 
-   Note that we might add a blender GUI plugin at some point in the future.
+   We're currently working on a Blender GUI Add-on to integrate ABR better into
+   your workflow, which we will release soon.
+
 
 2. **I really love ABR!**
 

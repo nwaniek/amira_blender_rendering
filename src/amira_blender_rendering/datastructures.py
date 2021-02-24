@@ -194,13 +194,13 @@ class DynamicStruct:
 
     def __setattr__(self, key, val):
         if key in ['_dict']:
-            super(DynamicStruct, self).__setattr__(key, val)
+            super().__setattr__(key, val)
         else:
             dict_put_nested(self._dict, key, val, type=DynamicStruct)
 
     def __getattr__(self, key):
         if key in ['_dict']:
-            super(DynamicStruct, self).__getattr__(key)
+            super().__getattr__(key)
         elif key == '_items':
             return self._dict.items
         else:
@@ -446,6 +446,17 @@ class Configuration():
                 # call to add the item to the argument parser
                 self._add_argparse_argument(prefix, k)
 
+    def parse_string(self, config_str, only_section: str = ''):
+        """Parse a configuration from a string. For more information
+        on the behavior, see `parse_file`.
+
+        Args:
+            config_str(str): the string containing the configuration
+            only_section(str, default=''): only parse the specified section
+        """
+        self._cfgparse.read_string(config_str)
+        self._process_cfgparse(only_section)
+
     def parse_file(self, filename, only_section: str = ''):
         """Parse a configuration file.
 
@@ -457,7 +468,12 @@ class Configuration():
             only_section(str, default=''): only parse the specified section
         """
         self._cfgparse.read(filename)
+        self._process_cfgparse(only_section)
 
+    def _process_cfgparse(self, only_section):
+        """Process a configuration after it was read and parse via
+        `_parse_string` or `_parse_config`.
+        """
         # extract all full keys from the configuration and store their values
         for section in self._cfgparse.sections():
             for item in self._cfgparse[section]:
@@ -534,7 +550,7 @@ class Configuration():
                 '_dict', '_name', '_parent', '_argparse', '_argparse_prefix', '_cfgparse', '_typeinfo', '_special',
                 '_help'
         ]:
-            return super(Configuration, self).__getattr__(key)
+            return super().__getattr__(key)
         else:
             return self._dict[key]
 
@@ -650,26 +666,27 @@ class Configuration():
         return _value
 
     def __getitem__(self, key):
-        return self._dict[key]
+        return dict_get_nested(self._dict, key)
 
     def __setitem__(self, key, value):
         """Set a specific value or sub-configuration"""
-        if isinstance(value, Configuration):
-            self._add_subconfig(key, value)
-        else:
-            # if we are in dotted notation, descend into the keys and generate
-            # sub-configurations on the fly. Because of type coercion, we cannot
-            # easily use dict_put_nested here
-            if '.' in key:
-                sub, rest = key.split('.', 1)
-                if sub not in self._dict:
-                    self._dict[sub] = Configuration('sub')
-                else:
-                    if not isinstance(self._dict[sub], (Configuration)):
-                        print("WW: Malformed configuration detected")
-                self._dict[sub][rest] = value
+        # if we are in dotted notation, descend into the keys and generate
+        # sub-configurations on the fly. Because of type coercion, we cannot
+        # easily use dict_put_nested here
+        if '.' in key:
+            sub, rest = key.split('.', 1)
+            if sub not in self._dict:
+                self._add_subconfig(sub, Configuration('sub'))
             else:
-                self._dict[key] = self._coerce_type(key, value)
+                if not isinstance(self._dict[sub], (Configuration)):
+                    raise ValueError(f"Malformed configuration detected. "
+                                     "Expected instance of Configuration at key '{sub}', "
+                                     "but found {type(self._dict[sub])}")
+            # recursively cal __setitem__
+            self._dict[sub][rest] = value
+        else:
+            self._dict[key] = self._coerce_type(key, value)
+
 
     def __repr__(self):
         """use the dict for representation"""

@@ -44,9 +44,9 @@ without having to manually re-install ABR afterwards.
 There's also the possibility to use ABR without any installation procedure. More
 about this can be found in :doc:`using`.
 
-NOTE: both the above installation commands will install ABR in your currently 
+NOTE: both the above installation commands will install ABR in your currently
 referenced Python distribution. To play around with ABR without messing up
-your standard/default distribution, we recommed to create and use a dedicated 
+your standard/default distribution, we recommed to create and use a dedicated
 environment, e.g., using Conda or virtualenv.
 
 
@@ -89,26 +89,32 @@ that you have the following layout of files in your `home` folder:
     $ ~/bin/blender-2.80.d      # un-packed blender download
     $ ~/bin/blender             # symlink to ~/bin/blender-2.80.d/blender
 
-To create the symlink run 
+To create the symlink run
 
 .. code-block:: bash
 
     $ ln -s blender-2.80.d/blender blender
 
-Make sure that ``~/bin`` is on your path (you can add it e.g., through your ``~/.bashrc``). 
+Make sure that ``~/bin`` is on your path (you can add it e.g., through your ``~/.bashrc``).
 To quickly test if the setup is correct you can try running ``blender`` from your command line
 which should start Blender's 2.80 GUI.
 
 As mentioned above, blender ships its own python binary. This leads to issues
-when trying to install third party libraries due to, e.g., numpy version mismatches. 
+when trying to install third party libraries due to, e.g., numpy version mismatches.
 There are three ways of dealing with this: Replacing blender's python version with your own virtual environment,
-configuring the blender python version to be able to use ``pip`` or using conda. 
+configuring the blender python version to be able to use ``pip`` or using conda.
 
 Replacing Blender's python version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Please note that starting with AMIRA Blender Rendering v1.1.0, it is usually not
+necessary anymore to replace blender's python version. However, if you wish to
+extend ABR, for instance via third party modules that rely `pip`, then it might
+be still required. Regular users, however, typically don't need to follow the
+replacement procedure.
+
 The following replaces the shipped python version with the python of a
-virtualenv. 
+virtualenv.
 
 We assume that blender was installed as above to ``~/bin/blender``,
 and that you have ``virtualenv`` or ``virtualenvwrapper`` installed.
@@ -118,7 +124,7 @@ and that you have ``virtualenv`` or ``virtualenvwrapper`` installed.
     $ mkvirtualenv blender-venv                  # This creates a new virtual environment.
                                                  # The path to the venv depends on your system
                                                  # setup. By default, it should end up either in
-                                                 # ~/.venvs, ~/.virtualenvs or something similar. 
+                                                 # ~/.venvs, ~/.virtualenvs or something similar.
                                                  # In the example here, we assume that virtualenvs
                                                  # are created in ~/.venvs .
                                                  # Note that this also activates the venv,
@@ -151,9 +157,9 @@ messages:
     ModuleNotFoundError: No module named 'encoding
 
 If this is the case, make sure that your virtualenv was created with a python3.7
-virtualenv script, and **neither** with a python2 **nor** a python3.8 virtualenv. 
-This could happen if you have a virtualenv script locally installed in ~/.local/bin, 
-which points to a python2 environment. 
+virtualenv script, and **neither** with a python2 **nor** a python3.8 virtualenv.
+This could happen if you have a virtualenv script locally installed in ~/.local/bin,
+which points to a python2 environment.
 One viable workaround is to create a python3 environment from which you run the above commands, i.e.
 
 1. Create a python3 environment with your virtualenv installation, e.g.
@@ -223,7 +229,7 @@ Testing your python installation
             version of blenders' python distribution. If you followed this tutorial, this should be ``pip-blender``
 
 If everything worked as it should, you can now install python packages
-within the newly created virtual environment with pip, which are then also available 
+within the newly created virtual environment with pip, which are then also available
 from within blender. For instance, to install numpy, imageio, and torch, simply run the following
 
 .. code-block:: bash
@@ -260,7 +266,7 @@ Using Conda
 Yet another option is to use conda as a virtual environement and package manager for python.
 
 We assume `anaconda3 <https://www.anaconda.com/products/individual or https://repo.anaconda.com/archive/>`_
-is `installed <https://phoenixnap.com/kb/how-to-install-anaconda-ubuntu-18-04-or-20-04>`_ 
+is `installed <https://phoenixnap.com/kb/how-to-install-anaconda-ubuntu-18-04-or-20-04>`_
 in your ``$HOME`` and available on you path. Make sure your version of anaconda python is >= 3.6
 
 Create a conda environment by running
@@ -269,7 +275,7 @@ Create a conda environment by running
 
     $ conda create --name blender-venv python=3.7.5 imageio numpy
 
-Similar to explained when using virtualenv, symlink blender to the environment. That is, 
+Similar to explained when using virtualenv, symlink blender to the environment. That is,
 from within ``~/bin/blender-2.80.d/2.80`` run
 
 .. code-block:: bash
