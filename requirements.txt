@@ -2,5 +2,10 @@
 coloredlogs
 numpy
 
-# for docs/sphinx
-sphinx-rtd-theme
+# for linting
+flake8
+
+# documentation
+mkdocs
+#mkdocs-versioning
+mkdocs-material

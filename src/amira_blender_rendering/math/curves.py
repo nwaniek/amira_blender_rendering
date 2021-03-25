@@ -127,7 +127,7 @@ def points_on_circle(num_points: int, radius: float = 1, center: np.array = np.a
     Optional Args:
         radius(float)
         center(np.array)
-        
+
     Returns:
         np.ndarray of points
     """
@@ -145,7 +145,7 @@ def points_on_wave(num_points, radius: float = 1, center: np.array = np.array([0
 
     Args:
         num_points(int)
-    
+
     Optional Args:
         radius(float): radius of circle
         center(np.array): center of circle
@@ -169,7 +169,7 @@ def points_on_piecewise_line(num_points: int, control_points: dict):
     Args:
         num_points(int): number of points to create
         cntrl_points(dict): dictionary of control points for the piecwise line
-    
+
     Returns:
         array of points
     """
@@ -203,7 +203,7 @@ def plot_points(points, camera=None, plot_axis: bool = False, scatter: bool = Fa
     3D plot of generated points
     """
     import matplotlib.pyplot as plt
-    from mpl_toolkits.mplot3d import Axes3D
+    from mpl_toolkits.mplot3d import Axes3D  # noqa
 
     fig = plt.figure()
     ax = fig.gca(projection='3d')

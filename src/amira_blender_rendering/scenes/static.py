@@ -27,9 +27,7 @@ but to correctly write data to file.
 """
 
 import bpy
-import os
 import pathlib
-from mathutils import Vector
 import numpy as np
 import random
 from math import ceil, log
@@ -67,16 +65,19 @@ class StaticSceneConfiguration(abr_scenes.BaseConfiguration):
                         'Camera.FrontoParallel.Right'], 'Cameras to render')
 
         # scenario: target objects
-        self.add_param('scenario_setup.target_objects', [], 'List of objects to drop in the scene for which annotated info are stored')
-        self.add_param('scenario_setup.textured_objects', [], 'List of objects whose texture is randomized during rendering')
+        self.add_param('scenario_setup.target_objects', [],
+                       'List of objects to drop in the scene for which annotated info are stored')
+        self.add_param('scenario_setup.textured_objects', [],
+                       'List of objects whose texture is randomized during rendering')
         self.add_param('scenario_setup.objects_textures', '', 'Path to images for object textures')
 
         # multiview configuration (if implemented)
         self.add_param('multiview_setup.mode', '',
                        'Selected mode to generate view points, i.e., random, bezier, viewsphere')
         self.add_param('multiview_setup.mode_config', Configuration(), 'Mode specific configuration')
-        self.add_param('multiview_setup.offset', True, 'If False, multi views are not offset with initial camera location. Default: True')
-        
+        self.add_param('multiview_setup.offset', True,
+                       'If False, multi views are not offset with initial camera location. Default: True')
+
         # specific debug config
         self.add_param('debug.plot', False, 'If True, in debug mode, enable simple visual debug')
         self.add_param('debug.plot_axis', False, 'If True, in debug-plot mode, plot camera coordinate systems')
@@ -101,13 +102,13 @@ class StaticScene(interfaces.ABRScene):
         # this check that the given configuration is (or inherits from) of the correct type
         if not isinstance(self.config, StaticSceneConfiguration):
             raise RuntimeError(f"Invalid configuration of type {type(self.config)} for class {_scene_name}")
-        
+
         # determine if we are rendering in multiview mode
         self.render_mode = kwargs.get('render_mode', 'default')
         if self.render_mode not in ['default', 'multiview']:
             self.logger.warn(f'render mode "{self.render_mode}" not supported. Falling back to "default"')
             self.render_mode = 'default'
-        
+
         # we might have to post-process the configuration
         self.postprocess_config()
 
@@ -164,7 +165,7 @@ class StaticScene(interfaces.ABRScene):
         def _convert_scaling(key: str, config):
             """
             Convert scaling factors from string to (list of) floats
-            
+
             Args:
                 key(str): string to identify prescribed scaling
                 config(Configuration): object to modify
@@ -282,7 +283,7 @@ class StaticScene(interfaces.ABRScene):
         where ObjectType should be the name of an object that exists in the
         blender file, and number indicates how often the object shall be
         duplicated.
-        
+
         Args:
             objects(list): list of ObjectType:Number to setup
 
@@ -321,7 +322,7 @@ class StaticScene(interfaces.ABRScene):
                 bpy_obj_name = f'{class_name}.{j:03d}'
                 blnd.select_object(bpy_obj_name)
                 new_obj = bpy.context.object
-                                    
+
                 # bookkeep instance
                 obk.add(class_name)
 
@@ -342,7 +343,7 @@ class StaticScene(interfaces.ABRScene):
             w_obj = ceil(log(obk[obj['object_class_name']]['instances'], 10))  # format width for objs with same model
             id_mask = f"_{obj['object_class_id']:0{w_class}}_{obj['object_id']:0{w_obj}}"
             obj['id_mask'] = id_mask
-        
+
         return objs
 
     def setup_compositor(self):
@@ -395,7 +396,7 @@ class StaticScene(interfaces.ABRScene):
     def test_visibility(self, camera_name: str, locations: np.array):
         """Test whether given camera sees all target objects
         and store visibility level/label for each target object
-        
+
         Args:
             camera(str): selected camera name
             locations(list): list of locations to check. If None, check current camera location
@@ -407,7 +408,7 @@ class StaticScene(interfaces.ABRScene):
         # make sure to work with multi-dim array
         if locations.shape == (3,):
             locations = np.reshape(locations, (1, 3))
-        
+
         # loop over locations
         for i_loc, location in enumerate(locations):
             camera.location = location
@@ -427,7 +428,7 @@ class StaticScene(interfaces.ABRScene):
                 obj['visible'] = not not_visible_or_occluded
                 if not_visible_or_occluded:
                     self.logger.warn(f"object {obj} not visible or occluded")
-            
+
                 # keep trace if any obj was not visible or occluded
                 any_not_visible_or_occluded = any_not_visible_or_occluded or not_visible_or_occluded
 
@@ -460,13 +461,13 @@ class StaticScene(interfaces.ABRScene):
         if self.config.dataset.image_count <= 0:
             return False
         scn_format_width = int(ceil(log(self.config.dataset.scene_count, 10)))
-        
+
         camera_names = [self.get_camera_name(cam_str) for cam_str in self.config.scene_setup.cameras]
         if self.render_mode == 'default':
             cameras_locations = camera_utils.get_current_cameras_locations(camera_names)
             for cam_name, cam_location in cameras_locations.items():
                 cameras_locations[cam_name] = np.reshape(cam_location, (1, 3))
-        
+
         elif self.render_mode == 'multiview':
             cameras_locations, _ = camera_utils.generate_multiview_cameras_locations(
                 num_locations=self.config.dataset.view_count,
@@ -477,7 +478,7 @@ class StaticScene(interfaces.ABRScene):
 
         else:
             raise ValueError(f'Selected render mode {self.render_mode} not currently supported')
-       
+
         # some debug options
         # NOTE: at this point the object of interest have been loaded in the blender
         # file but their positions have not yet been randomized..so they should all be located
@@ -511,7 +512,7 @@ class StaticScene(interfaces.ABRScene):
             # randomize scene: move objects at random locations, and forward simulate physics
             self.randomize_environment_texture()
             self.randomize_textured_objects_textures()
-            
+
             # check visibility
             repeat_frame = False
             if not self.config.render_setup.allow_occlusions:
@@ -521,7 +522,8 @@ class StaticScene(interfaces.ABRScene):
             # if we need to repeat (change static scene) we skip one iteration
             # without increasing the counter
             if repeat_frame:
-                self.logger.error(f'Something wrong (possibly due to visibility configurations). Make sure your static scene and config are correct. Exiting!')
+                self.logger.error('Something wrong (possibly due to visibility configurations).'
+                                  ' Make sure your static scene and config are correct. Exiting!')
                 exit(-1)
 
             # loop over cameras
@@ -535,15 +537,15 @@ class StaticScene(interfaces.ABRScene):
                     # retry at most 'max_retry' times then exit
                     if retry < MAX_RETRY:
                         break
-                    self.logger.error(f'Max number of {MAX_RETRY} retry reached. Make sure your static scene is correct. Exiting!')
+                    self.logger.error(f'Max num of {MAX_RETRY} retry reached. Check your static scene is correct. Exit')
                     exit(-1)
-        
+
                 # extract camera locations
                 cam_locations = cameras_locations[cam_name]
-                
+
                 # compute format width
                 view_format_width = int(ceil(log(len(cam_locations), 10)))
-                
+
                 # activate camera
                 self.activate_camera(cam_name)
 
@@ -577,7 +579,7 @@ class StaticScene(interfaces.ABRScene):
 
                     # update path information in compositor
                     self.renderman.setup_pathspec(self.dirinfos[i_cam], base_filename, self.objs)
-                    
+
                     # finally, render
                     self.renderman.render()
 
@@ -591,7 +593,7 @@ class StaticScene(interfaces.ABRScene):
                             self.objs,
                             self.config.camera_info.zeroing,
                             postprocess_config=self.config.postprocess)
-                        
+
                         if self.config.debug.enabled and self.config.debug.save_to_blend:
                             # reset frame to 0 and save
                             bpy.context.scene.frame_set(0)

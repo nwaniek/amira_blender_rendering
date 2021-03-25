@@ -45,7 +45,7 @@ def _save_data_on_error(scn_str, view_str, rgb_base_path, mask_base_path, logpat
     from shutil import copyfile
     logger.error('Saving to blender on error. Dumping additional image data')
     # copy rgb
-    rgbname = scn_str[1:] + view_str + f'.png'
+    rgbname = scn_str[1:] + view_str + '.png'
     srcpath = os.path.join(rgb_base_path, rgbname)
     dstpath = os.path.join(logpath, rgbname)
     copyfile(srcpath, dstpath)
@@ -144,7 +144,7 @@ class ABRScene():
         """
         # extract args
         basefilename = kw.get('basefilename', 'debug')
-        
+
         camera_name = kw.get('camera_name', None)
         camera_locations = kw.get('camera_locations', None)
 
@@ -163,13 +163,13 @@ class ABRScene():
                 name=camera_name,
                 locations=camera_locations,
                 filepath=os.path.join(logpath, basefilename + '.blend'))
- 
+
         elif scn_idx is not None and view_idx is not None:
             # (if necessary) modify path and set up
             if on_error:
                 logpath = _setup_logpath_on_error(logpath)
             pathlib.Path(logpath).mkdir(parents=True, exist_ok=True)
-            
+
             # file specs
             scn_frmt_w = int(ceil(log(self.config.dataset.scene_count, 10)))
             view_frmt_w = int(ceil(log(self.config.dataset.view_count, 10)))
@@ -187,16 +187,15 @@ class ABRScene():
                     self.objs)
 
             # finally save to blend
-            filename = basefilename + scn_str + view_str + f'.blend'
+            filename = basefilename + scn_str + view_str + '.blend'
             filepath = os.path.join(logpath, filename)
             logger.info(f"Saving current scene/view to blender file {filepath} for debugging")
             bpy.ops.wm.save_as_mainfile(filepath=filepath)
-            
+
         else:
             pathlib.Path(logpath).mkdir(parents=True, exist_ok=True)
             logger.info('Saving current active scene to blender for debugging')
             bpy.ops.wm.save_as_mainfile(filepath=os.path.join(logpath, basefilename + '.blend'))
-
 
 
 # NOTE: the functions and classes below were taken from amira_perception. Make
@@ -275,7 +274,7 @@ class PoseRenderResult:
             corners2d: object-oriented bbox projected to image space (first element is the centroid)
             aabb: axis aligned bounding box around object (this is in model-coordinates before model-world transform)
             oobb: object-oriented bounding box in 3D world coordinates (this is after view-rotation)
-        
+
         Optional Args:
             dense_features: optional dense feature representation of the surface
             mask_name(str): optional mask name to indetify correct mask in multi object scenarios. Default: ''
@@ -328,7 +327,7 @@ class PoseRenderResult:
         }
         if self.dense_features is not None:
             data['dense_features'] = try_to_list(self.dense_features)
-        
+
         return filter_state_keys(data, retain_keys)
 
 
@@ -342,7 +341,7 @@ def try_rotation_to_quaternion(rotation):
 
     Args:
         rotation: matrix or quaternion or None
-    
+
     Returns:
         quaternion or None
     """

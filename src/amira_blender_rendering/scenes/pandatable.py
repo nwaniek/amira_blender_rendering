@@ -63,17 +63,21 @@ class PandaTableConfiguration(abr_scenes.BaseConfiguration):
         self.add_param('scene_setup.forward_frames', 25, 'Number of frames in physics forward-simulation')
 
         # scenario: target objects
-        self.add_param('scenario_setup.target_objects', [], 'List of objects to drop in the scene for which annotated info are stored')
-        self.add_param('scenario_setup.distractor_objects', [], 'List of objects to drop in the scene for which info are NOT stored'
+        self.add_param('scenario_setup.target_objects', [],
+                       'List of objects to drop in the scene for which annotated info are stored')
+        self.add_param('scenario_setup.distractor_objects', [],
+                       'List of objects to drop in the scene for which info are NOT stored'
                        'List of objects visible in the scene but of which infos are not stored')
-        self.add_param('scenario_setup.textured_objects', [], 'List of objects whose texture is randomized during rendering')
+        self.add_param('scenario_setup.textured_objects', [],
+                       'List of objects whose texture is randomized during rendering')
         self.add_param('scenario_setup.objects_textures', '', 'Path to images for object textures')
 
         # multiview configuration (if implemented)
         self.add_param('multiview_setup.mode', '',
                        'Selected mode to generate view points, i.e., random, bezier, viewsphere')
         self.add_param('multiview_setup.mode_config', Configuration(), 'Mode specific configuration')
-        self.add_param('multiview_setup.offset', True, 'If False, multi views are not offset with initial camera location. Default: True')
+        self.add_param('multiview_setup.offset', True,
+                       'If False, multi views are not offset with initial camera location. Default: True')
 
         # specific debug config
         self.add_param('debug.plot', False, 'If True, in debug mode, enable simple visual debug')
@@ -99,13 +103,13 @@ class PandaTable(interfaces.ABRScene):
         # this check that the given configuration is (or inherits from) of the correct type
         if not isinstance(self.config, PandaTableConfiguration):
             raise RuntimeError(f"Invalid configuration of type {type(self.config)} for class PandaTable")
-        
+
         # determine if we are rendering in multiview mode
         self.render_mode = kwargs.get('render_mode', 'default')
         if self.render_mode not in ['default', 'multiview']:
             self.logger.warn(f'render mode "{self.render_mode}" not supported. Falling back to "default"')
             self.render_mode = 'default'
-        
+
         # we might have to post-process the configuration
         self.postprocess_config()
 
@@ -164,7 +168,7 @@ class PandaTable(interfaces.ABRScene):
         def _convert_scaling(key: str, config):
             """
             Convert scaling factors from string to (list of) floats
-            
+
             Args:
                 key(str): string to identify prescribed scaling
                 config(Configuration): object to modify
@@ -280,7 +284,7 @@ class PandaTable(interfaces.ABRScene):
         where ObjectType should be the name of an object that exists in the
         blender file, and number indicates how often the object shall be
         duplicated.
-        
+
         Args:
             objects(list): list of ObjectType:Number to setup
             bpy_collection(str): Name of bpy collection the given objects are
@@ -375,7 +379,7 @@ class PandaTable(interfaces.ABRScene):
                         except KeyError:
                             # log and keep going
                             self.logger.info(f'No ply_scale for obj {class_name} given. Skipping!')
-                
+
                 # move object to collection: in case of debugging
                 try:
                     collection = bpy.data.collections[bpy_collection]
@@ -406,7 +410,7 @@ class PandaTable(interfaces.ABRScene):
             w_obj = ceil(log(obk[obj['object_class_name']]['instances'], 10))  # format width for objs with same model
             id_mask = f"_{obj['object_class_id']:0{w_class}}_{obj['object_id']:0{w_obj}}"
             obj['id_mask'] = id_mask
-        
+
         return objs
 
     def setup_compositor(self):
@@ -428,10 +432,10 @@ class PandaTable(interfaces.ABRScene):
     def randomize_object_transforms(self, objs: list):
         """move all objects to random locations within their scenario dropzone,
         and rotate them.
-        
+
         Args:
             objs(list): list of objects whose pose is randomized.
-        
+
         NOTE: the list of objects must be mutable since the method does not return but directly modify them!
         """
 
@@ -445,14 +449,14 @@ class PandaTable(interfaces.ABRScene):
         # long as this was not modified within blender). The scale is the scale
         # along the axis in one direction, i.e. the full extend along this
         # direction is 2 * scale.
-        dropbox = f"Dropbox.000"
+        dropbox = "Dropbox.000"
         drop_location = bpy.data.objects[dropbox].location
         drop_scale = bpy.data.objects[dropbox].scale
 
         for i, obj in enumerate(objs):
             if obj['bpy'] is None:
                 continue
-        
+
             obj['bpy'].location.x = drop_location.x + (rnd[i, 0] - .5) * 2.0 * drop_scale[0]
             obj['bpy'].location.y = drop_location.y + (rnd[i, 1] - .5) * 2.0 * drop_scale[1]
             obj['bpy'].location.z = drop_location.z + (rnd[i, 2] - .5) * 2.0 * drop_scale[2]
@@ -481,7 +485,7 @@ class PandaTable(interfaces.ABRScene):
         scene = bpy.context.scene
         for i in range(self.config.scene_setup.forward_frames):
             scene.frame_set(i + 1)
-        self.logger.info(f'forward simulation: done!')
+        self.logger.info('forward simulation: done!')
 
     def activate_camera(self, cam_name: str):
         # first get the camera name. this depends on the scene (blend file)
@@ -507,7 +511,7 @@ class PandaTable(interfaces.ABRScene):
     def test_visibility(self, camera_name: str, locations: np.array):
         """Test whether given camera sees all target objects
         and store visibility level/label for each target object
-        
+
         Args:
             camera(str): selected camera name
             locations(list): list of locations to check. If None, check current camera location
@@ -519,7 +523,7 @@ class PandaTable(interfaces.ABRScene):
         # make sure to work with multi-dim array
         if locations.shape == (3,):
             locations = np.reshape(locations, (1, 3))
-        
+
         # loop over locations
         for i_loc, location in enumerate(locations):
             camera.location = location
@@ -539,7 +543,7 @@ class PandaTable(interfaces.ABRScene):
                 obj['visible'] = not not_visible_or_occluded
                 if not_visible_or_occluded:
                     self.logger.warn(f"object {obj} not visible or occluded")
-            
+
                 # keep trace if any obj was not visible or occluded
                 any_not_visible_or_occluded = any_not_visible_or_occluded or not_visible_or_occluded
 
@@ -572,13 +576,13 @@ class PandaTable(interfaces.ABRScene):
         if self.config.dataset.image_count <= 0:
             return False
         scn_format_width = int(ceil(log(self.config.dataset.scene_count, 10)))
-        
+
         camera_names = [self.get_camera_name(cam_str) for cam_str in self.config.scene_setup.cameras]
         if self.render_mode == 'default':
             cameras_locations = camera_utils.get_current_cameras_locations(camera_names)
             for cam_name, cam_location in cameras_locations.items():
                 cameras_locations[cam_name] = np.reshape(cam_location, (1, 3))
-        
+
         elif self.render_mode == 'multiview':
             cameras_locations, _ = camera_utils.generate_multiview_cameras_locations(
                 num_locations=self.config.dataset.view_count,
@@ -589,7 +593,7 @@ class PandaTable(interfaces.ABRScene):
 
         else:
             raise ValueError(f'Selected render mode {self.render_mode} not currently supported')
-       
+
         # some debug options
         # NOTE: at this point the object of interest have been loaded in the blender
         # file but their positions have not yet been randomized..so they should all be located
@@ -623,7 +627,7 @@ class PandaTable(interfaces.ABRScene):
             self.randomize_textured_objects_textures()
             self.randomize_object_transforms(self.objs + self.distractors)
             self.forward_simulate()
-            
+
             # check visibility
             repeat_frame = False
             if not self.config.render_setup.allow_occlusions:
@@ -646,13 +650,13 @@ class PandaTable(interfaces.ABRScene):
                 # multiple camera views and repeat the frame by re-generating the static scene
                 if repeat_frame:
                     break
-                
+
                 # extract camera locations
                 cam_locations = cameras_locations[cam_name]
-                
+
                 # compute format width
                 view_format_width = int(ceil(log(len(cam_locations), 10)))
-                
+
                 # activate camera
                 self.activate_camera(cam_name)
 
@@ -686,7 +690,7 @@ class PandaTable(interfaces.ABRScene):
 
                     # update path information in compositor
                     self.renderman.setup_pathspec(self.dirinfos[i_cam], base_filename, self.objs)
-                    
+
                     # finally, render
                     self.renderman.render()
 
@@ -700,7 +704,7 @@ class PandaTable(interfaces.ABRScene):
                             self.objs,
                             self.config.camera_info.zeroing,
                             postprocess_config=self.config.postprocess)
-                        
+
                         if self.config.debug.enabled and self.config.debug.save_to_blend:
                             # reset frame to 0 and save
                             bpy.context.scene.frame_set(0)
