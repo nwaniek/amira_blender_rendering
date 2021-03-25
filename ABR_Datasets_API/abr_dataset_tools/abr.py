@@ -49,7 +49,7 @@ Root directory: {root}\n\
         └─ mask/\n\
         └─ backdrop/"""
 
-___str_sample_struct__ = f"""
+___str_sample_struct__ = """
 Sample (dict):
     image_id (numeric):             # id for image related to sample
     num_objects (int):              # number of objects
@@ -75,7 +75,7 @@ Sample (dict):
             corners3d (np.array):   # 3D bounding box in pixel space
             aabb (np.array):        # axis aligned bounding box
             oobb (np.array)         # object oriented bounding box"""
-    
+
 
 class ABRDataset:
     """Class to handle dataset generated using AMIRA Blender Rendering"""
@@ -89,12 +89,12 @@ class ABRDataset:
 
         Optional Args:
             convention(str): annotations convention ['opencv' , 'opengl']. Default: 'opencv'
-    
+
         Kwargs Args:
             transform: torch-like sequential transform to apply to images while loading.
                         Transform must be implemented as a series of callable handling
                         the images in the loaded sample.
-        
+
         Returns:
             None
 
@@ -107,7 +107,7 @@ class ABRDataset:
         super(ABRDataset, self).__init__()
         self._root = expandpath(root, check_file=True)
         self.transform = kwargs.get('transform', None)  # allow for tranform to be applied
-        
+
         # load configuration from root dir
         dset_cfg = parse_dataset_configs(self._root)
 
@@ -135,14 +135,14 @@ class ABRDataset:
         self.parts = list()
         for id, part in enumerate(dset_cfg['scenario_setup']['target_objects'].split(',')):
             obj_type, _ = part.split(':')
-            
+
             # here we distinguish if we copy a part from the proto objects
             # within a scene, or if we have to load it from file
             is_proto_object = not obj_type.startswith('parts.')
             if not is_proto_object:
                 # split off the prefix for all files that we load from blender
                 obj_type = obj_type[6:]
-        
+
             part_info = {
                 'model_name': obj_type,
                 'model_id': id
@@ -193,14 +193,14 @@ class ABRDataset:
         log_msg = ''
         for a in annotations:
             obj = dict()
-   
+
             # set model and object name and id. Support single and multi object annotations
             obj['object_class_name'] = a['object_class_name']
             obj['object_class_id'] = a['object_class_id']
             obj['object_name'] = a['object_name']
             obj['object_id'] = a['object_id']
             obj['mask_name'] = a['mask_name']
-            
+
             # work out pose: convert to expected format first
             obj['pose'] = {
                 'q': np.array(a['pose']['q']),  # WXYZ
@@ -222,10 +222,10 @@ class ABRDataset:
 
             fname_mask_png = f"{self.fnames[index]}{obj['mask_name']}.png"
             mask = imageio.imread(os.path.join(self.dir_info['images']['mask'], fname_mask_png))
-    
+
             # collapse mask and depth to single axis (blender returns mask and depth with 3 channels)
             mask = (mask[:, :, 0] / np.max(mask)).astype(np.uint8)
-            
+
             obj['mask'] = mask
 
             # merge composite mask
@@ -283,7 +283,7 @@ class ABRDataset:
 
         Args:
             index(int): index of desired sample
-        
+
         Returns:
             sample(dict): dictionary with sample info (images, objects)
 
@@ -299,10 +299,10 @@ class ABRDataset:
 
         Args:
             indexes(list/iterable): iterable with desired indexes to load
-        
+
         Returns:
             list(dict): list with samples corresponding to given indexes
-        
+
         Raises:
             OverflowError: (at least) one of the index is out of dataset bound
         """
@@ -314,13 +314,13 @@ class ABRDataset:
     def get_images(self, index):
         """
         Public interface to load images (rgb, depth, mask) corresponding to given index
-        
+
         Args:
             index(int): index to load
-        
+
         Returns:
             images(dict): dict containing (rgb, depth, mask)
-        
+
         Raises:
             OverflowError: index is out of dataset bound
         """
@@ -329,28 +329,28 @@ class ABRDataset:
     def get_rgb(self, index):
         """
         Public interface to load rgb image corresponding to given index
-        
+
         Args:
             index(int): index to load
-        
+
         Returns:
             images(np.array): array with rgb image as a float [0, 1]
-        
+
         Raises:
             OverflowError: index is out of dataset bound
         """
         return self.get_images(index)['rgb']
-    
+
     def get_depth(self, index):
         """
         Public interface to load depth image corresponding to given index
-        
+
         Args:
             index(int): index to load
-        
+
         Returns:
             images(np.array): array with depth image with depth values representing distance in m
-        
+
         Raises:
             OverflowError: index is out of dataset bound
         """
@@ -359,13 +359,13 @@ class ABRDataset:
     def get_mask(self, index):
         """
         Public interface to load seg. mask corresponding to given index
-        
+
         Args:
             index(int): index to load
-        
+
         Returns:
             images(np.array): array with seg. mask as a int [0, 255]
-        
+
         Raises:
             OverflowError: index is out of dataset bound
         """
@@ -410,7 +410,7 @@ class ABRDataset:
             index(int): index of sample to plot
         """
         plot_sample(self.get_sample(index), target='mask')
-    
+
     def plot_backdrop(self, index):
         """Public interface to plot backdrop image from sample
 
@@ -421,7 +421,7 @@ class ABRDataset:
 
     def get_parts(self):
         return self.parts
-    
+
     def __len__(self):
         return self.dataset_info['image_count']
 
@@ -429,7 +429,7 @@ class ABRDataset:
         sample = self.load_sample(index)
         sample = self.apply_transform(sample)
         return sample
-    
+
     def __iter__(self):
         """Iter over all available dataset samples"""
         for i in range(len(self)):
@@ -439,11 +439,11 @@ class ABRDataset:
     @property
     def size(self):
         return len(self)
-    
+
     @property
     def root(self):
         return self._root
-    
+
     @property
     def convention(self):
         """Return convention of annotated info [openCV, openGL]"""
@@ -452,7 +452,7 @@ class ABRDataset:
     @property
     def __str_dir_info(self):
         return ___str_dir_info__.format(size=self.size, root=self.dir_info['root'])
-    
+
     @property
     def __str_sample_struct(self):
         return ___str_sample_struct__
@@ -474,7 +474,7 @@ class ABRDataset:
         for f in dir(self.__class__):
             if not callable(getattr(self.__class__, f)) and not f.startswith('_'):
                 properties += f"  - {str(f)}\n"
-        
+
         trailer = '\nFor more info about dataset and sample structured use the providned print methods\n'
 
         return header + methods + properties + trailer
@@ -486,7 +486,7 @@ class ABRDataset:
     def print_sample_struct(self):
         """Print sample structure"""
         print(self.__str_sample_struct)
-    
+
     def print_info(self):
         """Print info formatted string"""
         print(self.__str_info)

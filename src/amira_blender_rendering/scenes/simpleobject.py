@@ -45,7 +45,9 @@ class SimpleObjectConfiguration(abr_scenes.BaseConfiguration):
 
         # scene specific configuration
         # let's be able to specify environment textures
-        self.add_param('scene_setup.environment_textures', '$AMIRA_DATASETS/OpenImagesV4/Images', 'Path to background images / environment textures')
+        self.add_param('scene_setup.environment_textures',
+                       '$AMIRA_DATASETS/OpenImagesV4/Images',
+                       'Path to background images / environment textures')
         self.add_param('scenario_setup.target_object', 'Tool.Cap', 'Define single target object to render')
         self.add_param('scenario_setup.object_material', 'metal', 'Select object material ["plastic", "metal"]')
 
@@ -117,7 +119,7 @@ class SimpleObject(interfaces.ABRScene):
         def _convert_scaling(key: str, config):
             """
             Convert scaling factors from string to (list of) floats
-            
+
             Args:
                 key(str): string to identify prescribed scaling
                 config(Configuration): object to modify

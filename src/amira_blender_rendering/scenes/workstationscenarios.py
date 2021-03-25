@@ -77,17 +77,20 @@ class WorkstationScenariosConfiguration(abr_scenes.BaseConfiguration):
 
         # specific scenario configuration
         self.add_param('scenario_setup.scenario', 0, 'Scenario to render')
-        self.add_param('scenario_setup.target_objects', [], 'List of objects to drop in the scene for which annotated info are stored')
-        self.add_param('scenario_setup.distractor_objects', [], 'List of objects to drop in the scene for which info are NOT stored')
+        self.add_param('scenario_setup.target_objects', [],
+                       'List of objects to drop in the scene for which annotated info are stored')
+        self.add_param('scenario_setup.distractor_objects', [],
+                       'List of objects to drop in the scene for which info are NOT stored')
         self.add_param('scenario_setup.abc_objects', [], 'List of all ABC-Dataset objects to drop in environment')
         self.add_param('scenario_setup.num_abc_colors', 3, 'Number of random metallic materials to generate')
-    
+
         # multiview configuration (if implemented)
         self.add_param('multiview_setup.mode', '',
                        'Selected mode to generate view points, i.e., random, bezier, viewsphere')
         self.add_param('multiview_setup.mode_config', Configuration(), 'Mode specific configuration')
-        self.add_param('multiview_setup.offset', True, 'If False, multi views are not offset with initial camera location. Default: True')
-        
+        self.add_param('multiview_setup.offset', True,
+                       'If False, multi views are not offset with initial camera location. Default: True')
+
         # specific debug config
         self.add_param('debug.plot', False, 'If True, in debug mode, enable simple visual debug')
         self.add_param('debug.plot_axis', False, 'If True, in debug-plot mode, plot camera coordinate systems')
@@ -115,13 +118,13 @@ class WorkstationScenarios(interfaces.ABRScene):
         if self.config.dataset.scene_type.lower() != 'WorkstationScenarios'.lower():
             raise RuntimeError(
                 f"Invalid configuration of scene type {self.config.dataset.scene_type} for class WorkstationScenarios")
-        
+
         # determine if we are rendering in multiview mode
         self.render_mode = kwargs.get('render_mode', 'default')
         if self.render_mode not in ['default', 'multiview']:
             self.logger.warn(f'render mode "{self.render_mode}" not supported. Falling back to "default"')
             self.render_mode = 'default'
-        
+
         # we might have to post-process the configuration
         self.postprocess_config()
 
@@ -176,7 +179,7 @@ class WorkstationScenarios(interfaces.ABRScene):
         def _convert_scaling(key: str, config):
             """
             Convert scaling factors from string to (list of) floats
-            
+
             Args:
                 key(str): string to identify prescribed scaling
                 config(Configuration): object to modify
@@ -298,7 +301,7 @@ class WorkstationScenarios(interfaces.ABRScene):
 
         Args:
             objects(list): list of ObjectType:Number to setup
-        
+
         Optional Args:
             bpy_collection(str): Name of bpy collection the given objects are
                 linked to in the .blend file. Default: TargetObjects
@@ -474,10 +477,10 @@ class WorkstationScenarios(interfaces.ABRScene):
     def randomize_object_transforms(self, objs: list):
         """move all objects to random locations within their scenario dropzone,
         and rotate them.
-        
+
         Args:
             objs(list): list of objects whose pose is randomized
-            
+
         NOTE: the list must be mutable since we directly modify the objects w/o returning them
         """
 
@@ -525,7 +528,7 @@ class WorkstationScenarios(interfaces.ABRScene):
 
     def activate_camera(self, cam_name: str):
         """Activate selected camera:
-        
+
         Args:
             cam_name(str): actual name of selected bpy camera object
         """
@@ -534,7 +537,7 @@ class WorkstationScenarios(interfaces.ABRScene):
     def set_camera_location(self, cam_name: str, location):
         """
         Set location of selected camera
-        
+
         Args:
             cam_name(str): actual name of selected bpy camera object
             location(array): camera location
@@ -552,7 +555,7 @@ class WorkstationScenarios(interfaces.ABRScene):
     def test_visibility(self, camera_name: str, locations: np.array):
         """Test whether given camera sees all target objects
         and store visibility level/label for each target object
-        
+
         Args:
             camera(str): name of bpy selected camera object
             locations(list): list of locations to check. If None, check current camera location
@@ -565,11 +568,11 @@ class WorkstationScenarios(interfaces.ABRScene):
         # make sure to work with multi-dim array
         if locations.shape == (3,):
             locations = np.reshape(locations, (1, 3))
-        
+
         # loop over locations
         for location in locations:
             camera.location = location
-            
+
             any_not_visible_or_occluded = False
             for obj in self.objs:
                 not_visible_or_occluded = abr_geom.test_occlusion(
@@ -585,16 +588,16 @@ class WorkstationScenarios(interfaces.ABRScene):
                 obj['visible'] = not not_visible_or_occluded
                 if not_visible_or_occluded:
                     self.logger.warn(f"object {obj} not visible or occluded")
-                
+
                 any_not_visible_or_occluded = any_not_visible_or_occluded or not_visible_or_occluded
-                    
+
             # if any_not_visibile_or_occluded --> at least one object is not visible from one locaiton: return False
             if any_not_visible_or_occluded:
                 return False
 
         # --> all objects are visible (from all locations): return True
         return True
-    
+
     def generate_dataset(self):
         """This will generate a multiview dataset according to the configuration that
         was passed in the constructor.
@@ -617,14 +620,14 @@ class WorkstationScenarios(interfaces.ABRScene):
         if self.config.dataset.image_count <= 0:
             return False
         scn_format_width = int(ceil(log(self.config.dataset.scene_count, 10)))
-        
+
         # extract actual bpy object camera names and generate locations
         camera_names = [self.get_camera_name(cam_str) for cam_str in self.config.scene_setup.cameras]
         if self.render_mode == 'default':
             cameras_locations = camera_utils.get_current_cameras_locations(camera_names)
             for cam_name, cam_location in cameras_locations.items():
                 cameras_locations[cam_name] = np.reshape(cam_location, (1, 3))
-        
+
         elif self.render_mode == 'multiview':
             cameras_locations, _ = camera_utils.generate_multiview_cameras_locations(
                 num_locations=self.config.dataset.view_count,
@@ -632,10 +635,10 @@ class WorkstationScenarios(interfaces.ABRScene):
                 camera_names=camera_names,
                 config=self.config.multiview_setup.mode_config,
                 offset=self.config.multiview_setup.offset)
-        
+
         else:
             raise ValueError(f'Selected render mode {self.render_mode} not currently supported')
-        
+
         # some debug options
         # NOTE: at this point the object of interest have been loaded in the blender
         # file but their positions have not yet been randomized..so they should all be located
@@ -668,7 +671,7 @@ class WorkstationScenarios(interfaces.ABRScene):
             self.randomize_environment_texture()
             self.randomize_object_transforms(self.objs + self.distractors)
             self.forward_simulate()
-            
+
             # check visibility
             repeat_frame = False
             if not self.config.render_setup.allow_occlusions:
@@ -686,18 +689,18 @@ class WorkstationScenarios(interfaces.ABRScene):
             for i_cam, cam_str in enumerate(self.config.scene_setup.cameras):
                 # get bpy object camera name
                 cam_name = self.get_camera_name(cam_str)
-                
+
                 # check whether we broke the for-loop responsible for image generation for
                 # multiple camera views and repeat the frame by re-generating the static scene
                 if repeat_frame:
                     break
-                
+
                 # extract camera locations
                 cam_locations = cameras_locations[cam_name]
-                
+
                 # compute format width
                 view_format_width = int(ceil(log(len(cam_locations), 10)))
-                
+
                 # activate camera
                 self.activate_camera(cam_name)
 
@@ -732,7 +735,7 @@ class WorkstationScenarios(interfaces.ABRScene):
 
                     # update path information in compositor
                     self.renderman.setup_pathspec(self.dirinfos[i_cam], base_filename, self.objs)
-                    
+
                     # finally, render
                     self.renderman.render()
 
